@@ -64,9 +64,13 @@ export const AuthProvider = ({ children }) => {
       setError("");
       return response.data;
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Signup failed";
-      setError(errorMsg);
-      throw new Error(errorMsg);
+      if (error.response?.data) {
+        throw error;
+      } else {
+        const errorMsg = "Une erreur est survenue lors de l'inscription";
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
     }
   };
 
@@ -75,10 +79,25 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post("/api/auth/google/", {
         token_id: tokenId,
       });
+      
+      // Vérifier si l'email est vérifié
+      if (response.data.hasOwnProperty('email_verified') && !response.data.email_verified) {
+        // Email non vérifié, afficher le message
+        setError("");
+        return {
+          success: false,
+          message: response.data.message || "Veuillez vérifier votre email avant de vous connecter."
+        };
+      }
+      
+      // Email vérifié, procéder à la connexion
       localStorage.setItem("authToken", response.data.token);
       setCurrentUser(response.data.user);
       setError("");
-      return response.data;
+      return {
+        success: true,
+        ...response.data
+      };
     } catch (error) {
       const errorMsg =
         error.response?.data?.message || "Google authentication failed";
@@ -89,13 +108,36 @@ export const AuthProvider = ({ children }) => {
 
   const resetPassword = async (email) => {
     try {
-      await axios.post("/api/auth/reset-password/", { email });
+      await axios.post("/api/auth/request-password-reset/", { email });
       setError("");
       return true;
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Password reset failed";
+      const errorMsg =
+        error.response?.data?.message ||
+        "La demande de réinitialisation du mot de passe a échoué";
       setError(errorMsg);
       throw new Error(errorMsg);
+    }
+  };
+
+  const confirmPasswordReset = async (token, newPassword, confirmPassword) => {
+    try {
+      const response = await axios.post(`/api/auth/reset-password/${token}/`, {
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+        token: token,
+      });
+      setError("");
+      return response.data;
+    } catch (error) {
+      console.log("Reset password error:", error.response?.data);
+      if (error.response?.data) {
+        throw error;
+      } else {
+        const errorMsg = "La réinitialisation du mot de passe a échoué";
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
     }
   };
 
@@ -110,6 +152,7 @@ export const AuthProvider = ({ children }) => {
     signup,
     googleAuth,
     resetPassword,
+    confirmPasswordReset,
     logout,
     error,
     loading,

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 import "../styles/Forms.css";
 
 const LoginForm = () => {
@@ -8,7 +9,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, googleAuth } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -23,6 +24,27 @@ const LoginForm = () => {
       setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (response) => {
+    try {
+      const result = await googleAuth(response.tokenId);
+      
+      if (!result.success) {
+        // Email non vérifié, afficher un message toast
+        toast.info(result.message);
+        // Optionnel : rediriger vers la page de connexion après un délai
+        setTimeout(() => {
+          navigate('/login');
+        }, 5000);
+      } else {
+        // Email vérifié, rediriger vers le dashboard
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error("Google authentication error:", error);
+      toast.error("Échec de l'authentification Google");
     }
   };
 
@@ -56,6 +78,16 @@ const LoginForm = () => {
       <button type="submit" className="primary-button" disabled={isLoading}>
         {isLoading ? "Logging in..." : "Login"}
       </button>
+      
+      {/* Ajouter un bouton pour Google Login qui utilise handleGoogleSuccess */}
+      {/* Exemple: */}
+      {/* <GoogleLogin
+        clientId="YOUR_GOOGLE_CLIENT_ID"
+        buttonText="Login with Google"
+        onSuccess={handleGoogleSuccess}
+        onFailure={(error) => console.error("Google login failed:", error)}
+        cookiePolicy={'single_host_origin'}
+      /> */}
     </form>
   );
 };
