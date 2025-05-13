@@ -21,7 +21,7 @@ const Header = ({ user, onLogout }) => {
       <div className="header-right">
         {user && (
           <>
-            <span className="user-name">Welcome {user.username}</span>
+            <span className="user-name">Welcome doncteur {user.username}</span>
             <button onClick={handleLogout} className="logout-button">
               Logout
             </button>
