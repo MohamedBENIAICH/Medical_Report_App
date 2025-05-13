@@ -15,11 +15,13 @@ from docx import Document
 import logging
 import traceback
 import json
+from django.core.mail import EmailMessage
+from accounts.utils import send_medical_report_email
 
 logger = logging.getLogger(__name__)
 
 from .models import Report
-from .serializers import ReportSerializer, ReportGenerateSerializer
+from .serializers import ReportSerializer, ReportGenerateSerializer, ReportExportSerializer, ReportEmailSerializer
 
 
 class ReportViewSet(viewsets.ReadOnlyModelViewSet):
@@ -228,3 +230,72 @@ class GenerateReportView(APIView):
             return Response({
                 'error': f"Server error: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SendReportEmailView(APIView):
+    """Send a medical report by email"""
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            serializer = ReportEmailSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            report_id = serializer.validated_data['report_id']
+            patient_email = serializer.validated_data['patient_email']
+            patient_name = serializer.validated_data['patient_name']
+            format_type = serializer.validated_data['format']
+            
+            try:
+                report = Report.objects.get(id=report_id, user=request.user)
+            except Report.DoesNotExist:
+                return Response({'error': 'Report not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Generate the report file
+            if format_type == 'pdf':
+                # Generate PDF
+                buffer = io.BytesIO()
+                p = canvas.Canvas(buffer, pagesize=letter)
+                p.drawString(100, 750, "Medical Report")
+                p.drawString(100, 700, f"Diagnosis: {report.diagnosis}")
+                p.drawString(100, 650, f"Details: {report.details}")
+                p.drawString(100, 600, f"Accuracy: {report.accuracy * 100:.1f}%")
+                p.drawString(100, 550, "Recommendations:")
+                y = 500
+                for rec in json.loads(report.recommendations):
+                    p.drawString(120, y, f"• {rec}")
+                    y -= 20
+                p.save()
+                report_file = buffer.getvalue()
+            else:  # docx
+                # Generate Word document
+                doc = Document()
+                doc.add_heading('Medical Report', 0)
+                doc.add_heading('Diagnosis', level=1)
+                doc.add_paragraph(report.diagnosis)
+                doc.add_heading('Details', level=1)
+                doc.add_paragraph(report.details)
+                doc.add_heading('Accuracy', level=1)
+                doc.add_paragraph(f"{report.accuracy * 100:.1f}%")
+                doc.add_heading('Recommendations', level=1)
+                for rec in json.loads(report.recommendations):
+                    doc.add_paragraph(f"• {rec}", style='List Bullet')
+                word_buffer = io.BytesIO()
+                doc.save(word_buffer)
+                report_file = word_buffer.getvalue()
+            
+            # Send email with the report
+            send_medical_report_email(
+                user=request.user,
+                patient_email=patient_email,
+                patient_name=patient_name,
+                report_file=report_file,
+                format_type=format_type
+            )
+            
+            return Response({'message': 'Report sent successfully'}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error sending report email: {str(e)}")
+            return Response({'error': f"Error sending email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Votre Rapport Médical</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Rapport Médical</h2>
+    </div>
+    <div class="content">
+        <p>Bonjour {{ patient_name }},</p>
+        <p>J'espère que vous allez bien. Je m'appelle Dr. {{ doctor_name }}.</p>
+        <p>Veuillez trouver ci-joint votre rapport médical au format {{ format }}.</p>
+        <p>Ce rapport contient les résultats de votre analyse médicale récente. N'hésitez pas à me contacter si vous avez des questions concernant ce rapport.</p>
+        <p>Cordialement,</p>
+        <p>Dr. {{ doctor_name }}</p>
+    </div>
+    <div class="footer">
+        <p>Ce message est confidentiel et destiné uniquement au destinataire mentionné ci-dessus.</p>
+    </div>
+</body>
+</html>

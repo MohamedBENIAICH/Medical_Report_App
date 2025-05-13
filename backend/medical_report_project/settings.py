@@ -73,7 +73,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'medical_report_app',
         'USER': 'postgres',
-        'PASSWORD': 'your password',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '5432',
     }

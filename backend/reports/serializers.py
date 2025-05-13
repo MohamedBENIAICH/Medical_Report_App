@@ -16,3 +16,10 @@ class ReportGenerateSerializer(serializers.Serializer):
 
 class ReportExportSerializer(serializers.Serializer):
     format = serializers.ChoiceField(choices=['pdf', 'docx', 'txt'])
+
+
+class ReportEmailSerializer(serializers.Serializer):
+    report_id = serializers.UUIDField(required=True)
+    patient_email = serializers.EmailField(required=True)
+    patient_name = serializers.CharField(required=True)
+    format = serializers.ChoiceField(choices=['pdf', 'docx'])
