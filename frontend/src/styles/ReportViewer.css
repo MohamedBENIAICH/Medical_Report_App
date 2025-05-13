@@ -28,8 +28,9 @@
   
   .export-controls {
     display: flex;
+    flex-direction: column;
     gap: 12px;
-    align-items: center;
+    align-items: flex-end;
   }
   
   .export-controls select {
@@ -41,6 +42,12 @@
     color: #4b5563;
     outline: none;
     cursor: pointer;
+    width: 200px;
+  }
+  
+  .export-buttons {
+    display: flex;
+    gap: 12px;
   }
   
   .export-button {
@@ -252,10 +259,12 @@
   background-color: #2196F3;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
   cursor: pointer;
-  margin-left: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .email-button:hover {
@@ -340,4 +349,39 @@
   border: 1px solid #ebccd1;
   color: #a94442;
   border-radius: 4px;
+}
+
+.whatsapp-button {
+  background-color: #25D366;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.whatsapp-button:hover {
+  background-color: #128C7E;
+}
+
+.whatsapp-form-container {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.whatsapp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.whatsapp-form h3 {
+  color: #128C7E;
+  margin-bottom: 15px;
 }

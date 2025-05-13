@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-secret-key-replace-this-in-production'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok.io', '.ngrok-free.app']
 
 # Application definition
 INSTALLED_APPS = [
@@ -73,7 +73,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'medical_report_app',
         'USER': 'postgres',
-        'PASSWORD': 'password',
+        'PASSWORD': 'mohamed2002',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -129,6 +129,8 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://*.ngrok.io",
+    "https://*.ngrok-free.app",
 ]
 
 # Google AI API Key

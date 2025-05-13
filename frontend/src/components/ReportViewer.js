@@ -6,11 +6,20 @@ import { API_URL } from "../config/constants";
 const ReportViewer = ({ report, isLoading }) => {
   const [exportFormat, setExportFormat] = useState("pdf");
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [showWhatsappForm, setShowWhatsappForm] = useState(false);
   const [emailData, setEmailData] = useState({
     patient_email: "",
     patient_name: "",
   });
+  const [whatsappData, setWhatsappData] = useState({
+    phone: "",
+  });
   const [emailStatus, setEmailStatus] = useState({
+    sending: false,
+    success: false,
+    error: null,
+  });
+  const [whatsappStatus, setWhatsappStatus] = useState({
     sending: false,
     success: false,
     error: null,
@@ -107,6 +116,89 @@ const ReportViewer = ({ report, isLoading }) => {
     }
   };
 
+  const handleWhatsappFormChange = (e) => {
+    const { name, value } = e.target;
+    setWhatsappData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSendWhatsapp = async (e) => {
+    e.preventDefault();
+    if (!report) return;
+
+    setWhatsappStatus({ sending: true, success: false, error: null });
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      // Get the base64 data for the selected format
+      const base64Data = report[exportFormat];
+      if (!base64Data) {
+        throw new Error("No data available for the selected format");
+      }
+
+      // Prepare the message based on the report content
+      const message =
+        `Medical Report Summary:\n\n` +
+        `Diagnosis: ${report.diagnosis || "Not available"}\n` +
+        `Confidence: ${(report.accuracy * 100).toFixed(1)}%\n\n` +
+        `Please find the detailed report attached.`;
+
+      // Ensure the base64 data is properly formatted
+      let pdfBase64 = base64Data;
+      if (pdfBase64.includes("data:")) {
+        // Remove the data URL prefix if present
+        pdfBase64 = pdfBase64.split(",")[1];
+      }
+
+      const response = await axios.post(
+        `${API_URL}/reports/send-whatsapp/`,
+        {
+          phone: whatsappData.phone,
+          message: message,
+          pdf: pdfBase64,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data.status === "success") {
+        setWhatsappStatus({
+          sending: false,
+          success: true,
+          error: null,
+        });
+
+        // Reset form after successful send
+        setTimeout(() => {
+          setShowWhatsappForm(false);
+          setWhatsappData({ phone: "" });
+          setWhatsappStatus({ sending: false, success: false, error: null });
+        }, 3000);
+      } else {
+        throw new Error(
+          response.data.message || "Failed to send WhatsApp message"
+        );
+      }
+    } catch (error) {
+      console.error("Error sending report by WhatsApp:", error);
+      setWhatsappStatus({
+        sending: false,
+        success: false,
+        error:
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to send WhatsApp message",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="report-viewer">
@@ -149,15 +241,23 @@ const ReportViewer = ({ report, isLoading }) => {
             <option value="pdf">PDF Format</option>
             <option value="docx">Word Document</option>
           </select>
-          <button onClick={handleExport} className="export-button">
-            Download Report
-          </button>
-          <button
-            onClick={() => setShowEmailForm(!showEmailForm)}
-            className="email-button"
-          >
-            Send by Email
-          </button>
+          <div className="export-buttons">
+            <button onClick={handleExport} className="export-button">
+              Download Report
+            </button>
+            <button
+              onClick={() => setShowEmailForm(!showEmailForm)}
+              className="email-button"
+            >
+              Send by Email
+            </button>
+            <button
+              onClick={() => setShowWhatsappForm(!showWhatsappForm)}
+              className="whatsapp-button"
+            >
+              Send by WhatsApp
+            </button>
+          </div>
         </div>
       </div>
 
@@ -212,6 +312,52 @@ const ReportViewer = ({ report, isLoading }) => {
             )}
             {emailStatus.error && (
               <div className="error-message">{emailStatus.error}</div>
+            )}
+          </form>
+        </div>
+      )}
+
+      {showWhatsappForm && (
+        <div className="whatsapp-form-container">
+          <form onSubmit={handleSendWhatsapp} className="whatsapp-form">
+            <h3>Send Report via WhatsApp</h3>
+            <div className="form-group">
+              <label htmlFor="phone">WhatsApp Number:</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={whatsappData.phone}
+                onChange={handleWhatsappFormChange}
+                placeholder="+1234567890"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Format:</label>
+              <span>{exportFormat.toUpperCase()}</span>
+            </div>
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => setShowWhatsappForm(false)}
+                className="cancel-button"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="send-button"
+                disabled={whatsappStatus.sending}
+              >
+                {whatsappStatus.sending ? "Sending..." : "Send Report"}
+              </button>
+            </div>
+            {whatsappStatus.success && (
+              <div className="success-message">Report sent successfully!</div>
+            )}
+            {whatsappStatus.error && (
+              <div className="error-message">{whatsappStatus.error}</div>
             )}
           </form>
         </div>
