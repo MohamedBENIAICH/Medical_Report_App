@@ -557,9 +557,10 @@ def send_whatsapp_message(request):
                     'message': 'Invalid phone number format. Please provide a valid international number (e.g., +1234567890)'
                 }, status=400)
 
-            account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-            auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-            from_whatsapp_number = os.environ.get('TWILIO_WHATSAPP_NUMBER')
+            # Get Twilio credentials from settings
+            account_sid = settings.TWILIO_ACCOUNT_SID
+            auth_token = settings.TWILIO_AUTH_TOKEN
+            from_whatsapp_number = settings.TWILIO_WHATSAPP_NUMBER
 
             # Check if trying to send to the same number
             if phone == from_whatsapp_number.replace('whatsapp:', ''):

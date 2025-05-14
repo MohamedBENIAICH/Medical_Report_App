@@ -37,7 +37,23 @@ yarn-error.log
 .env
 .env.local
 .env.*.local
+.env.*
+!.env-example
 
 # Virtual Environment
 venv/
-ENV/ 
+ENV/
+backend/env/
+backend/venv/
+
+# Database files
+*.sqlite3
+*.db
+backend/db.sqlite3
+
+# Media and static files
+backend/media/
+backend/static/
+
+# Log files
+*.log 

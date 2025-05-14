@@ -10,10 +10,10 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-secret-key-replace-this-in-production'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-dev-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok.io', '.ngrok-free.app']
 
@@ -71,11 +71,11 @@ WSGI_APPLICATION = 'medical_report_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'medical_report_app',
-        'USER': 'postgres',
-        'PASSWORD': 'mohamed2002',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'medical_report_app'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -134,10 +134,10 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Google AI API Key
-GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY', 'your-api-key-here')
+GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY', '')
 
 # Google OAuth2 settings
-GOOGLE_OAUTH2_CLIENT_ID = '362842294073-smr1q2movml2jqmisvsccca4qbvapcdg.apps.googleusercontent.com'
+GOOGLE_OAUTH2_CLIENT_ID = os.getenv('GOOGLE_OAUTH2_CLIENT_ID', '')
 
 # Logging configuration
 LOGGING = {
@@ -174,5 +174,10 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
+# Twilio Configuration
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
+TWILIO_WHATSAPP_NUMBER = os.getenv('TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
+
 # Frontend URL for email confirmation and password reset
-FRONTEND_URL = 'http://localhost:3000'
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
